@@ -13,16 +13,23 @@ import os
 JOKE = "I asked IT for a second monitor and got a lecture on gratitude, a ticket number, and a chair with one wheel missing."
 
 
+def validate_entry(text: str) -> None:
+    """Gate self-check (mirrors the sealed scorer): UTF-8, 1-200 chars,
+    single line, not only whitespace. Fail loudly instead of writing
+    an entry the gate would refuse."""
+    assert 1 <= len(text) <= 200, "entry must be 1-200 characters"
+    assert "\n" not in text and text.strip(), "entry must be one non-blank line"
+
+
 def main() -> None:
-    # Gate self-check (mirrors the sealed scorer): UTF-8, 1-200 chars,
-    # single line, not only whitespace. Fail loudly instead of writing
-    # an entry the gate would refuse.
-    assert 1 <= len(JOKE) <= 200, "joke must be 1-200 characters"
-    assert "\n" not in JOKE and JOKE.strip(), "joke must be one non-blank line"
+    validate_entry(JOKE)
     os.makedirs("/output", exist_ok=True)
     # No trailing newline: the file holds exactly the joke, byte for byte.
     with open("/output/entry.txt", "w", encoding="utf-8", newline="") as f:
         f.write(JOKE)
+    # Round-trip check: the file on disk must decode as UTF-8 and hold
+    # exactly the joke — catch encoding or write surprises before submit.
+    assert open("/output/entry.txt", encoding="utf-8").read() == JOKE
 
 
 if __name__ == "__main__":
